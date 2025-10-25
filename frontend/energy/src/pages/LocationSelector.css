@@ -1,0 +1,175 @@
+.location-selector {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.location-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+}
+
+.location-grid {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.selector-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.selector-header h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.location-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid;
+  border-radius: 15px;
+  background: white;
+  height: 100%;
+  min-height: 220px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.location-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+.location-icon {
+  font-size: 4rem;
+  margin: 1rem 0;
+}
+
+.location-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #2c3e50;
+}
+
+.location-description {
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+.open-button {
+  color: white;
+  padding: 0.5rem 2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.info-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: none;
+}
+
+.consumption-box {
+  padding: 1.5rem;
+  border-right: 1px solid #e0e0e0;
+}
+
+.consumption-box:last-child {
+  border-right: none;
+}
+
+.consumption-box h6 {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+}
+
+.consumption-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  font-family: 'Courier New', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .selector-header h1 {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .location-card {
+    min-height: 180px;
+  }
+  
+  .location-icon {
+    font-size: 3rem;
+  }
+  
+  .location-name {
+    font-size: 1.2rem;
+  }
+  
+  .consumption-box {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1rem;
+  }
+  
+  .consumption-box:last-child {
+    border-bottom: none;
+  }
+  
+  .consumption-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .location-selector {
+    padding: 1.5rem 1rem;
+  }
+  
+  .selector-header {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+  }
+  
+  .selector-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .location-card {
+    min-height: 150px;
+  }
+  
+  .location-icon {
+    font-size: 2.5rem;
+    margin: 0.5rem 0;
+  }
+}

@@ -1,0 +1,60 @@
+.chart-panel {
+  margin-bottom: 1.5rem;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.chart-panel .card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.chart-panel .card-body {
+  padding: 1.5rem;
+}
+
+.no-data-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chart-panel .card-header h5 {
+    font-size: 1rem;
+  }
+  
+  .chart-panel .card-body {
+    padding: 1rem;
+  }
+  
+  .no-data-message {
+    height: 250px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-panel .card-header {
+    padding: 0.75rem;
+  }
+  
+  .chart-panel .card-header h5 {
+    font-size: 0.9rem;
+  }
+  
+  .no-data-message {
+    height: 200px;
+    font-size: 0.9rem;
+  }
+}
