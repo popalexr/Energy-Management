@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { initModbusConnection, startPolling, stopPolling } from './modbusPoller.js';
 import locationsRouter from './routes/locations.js';
 import systemRouter from './routes/system.js';
+import pxr10Router from './routes/pxr10.js';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/v1/locations', locationsRouter);
 app.use('/api/v1/system', systemRouter);
+app.use('/api/v1/pxr10', pxr10Router);
 
 // Root endpoint
 app.get('/', (req, res) => {

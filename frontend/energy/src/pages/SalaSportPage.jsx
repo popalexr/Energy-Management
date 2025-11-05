@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import KpiCard from '../components/KpiCard';
 import ChartPanel from '../components/ChartPanel';
 import MeasurementTable from '../components/MeasurementTable';
-import { locationAPI } from '../services/api';
+import { locationAPI, pxr10API } from '../services/api';
 import './SalaSportPage.css';
 
 function SalaSportPage() {
@@ -15,6 +15,8 @@ function SalaSportPage() {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', data: [] });
+  const [pxrStatus, setPxrStatus] = useState(null);
+  const [pxrSnapshot, setPxrSnapshot] = useState(null);
 
   const LOCATION = locationId || 'sala-sport';
 
@@ -35,8 +37,26 @@ function SalaSportPage() {
   useEffect(() => {
     fetchData();
 
+    // Fetch PXR10 status and one-shot snapshot
+    const fetchPxr = async () => {
+      try {
+        const status = await pxr10API.getStatus();
+        setPxrStatus(status);
+        const snap = await pxr10API.getAllRegisters();
+        setPxrSnapshot(snap.data);
+      } catch (e) {
+        // non-fatal for UI; keep page working from DB
+        console.warn('PXR10 not reachable or disabled:', e?.message || e);
+      }
+    };
+    fetchPxr();
+
     // Auto-refresh every 5 seconds
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(() => {
+      fetchData();
+      // light-weight: only refresh status; snapshot on demand via button
+      pxr10API.getStatus().then(setPxrStatus).catch(() => {});
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [locationId]);
@@ -407,6 +427,47 @@ function SalaSportPage() {
                   <span className="consumption-value">
                     {frequency.value?.toFixed(2)} Hz
                   </span>
+                </div>
+              )}
+            </div>
+
+            {/* Live PXR10 Snapshot */}
+            <div className="consumption-summary mt-3">
+              <h5>PXR10 Live</h5>
+              <div className="consumption-item">
+                <span className="consumption-label">Status:</span>
+                <span className="consumption-value">
+                  {pxrStatus ? `${pxrStatus.connected ? 'Connected' : 'Disconnected'} (${pxrStatus.mode})` : '—'}
+                </span>
+              </div>
+              <div className="d-flex gap-2 mb-2">
+                <Button size="sm" variant="outline-secondary" onClick={async () => {
+                  try {
+                    const snap = await pxr10API.getAllRegisters();
+                    setPxrSnapshot(snap.data);
+                  } catch (e) {
+                    console.error('Snapshot failed', e);
+                  }
+                }}>Refresh Snapshot</Button>
+              </div>
+              {pxrSnapshot && (
+                <div className="small">
+                  <div className="consumption-item">
+                    <span className="consumption-label">U L1-N:</span>
+                    <span className="consumption-value">{pxrSnapshot.VOLTAGE_L1N?.value ?? '—'} V</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">I L1:</span>
+                    <span className="consumption-value">{pxrSnapshot.CURRENT_L1?.value ?? '—'} A</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">P Total:</span>
+                    <span className="consumption-value">{pxrSnapshot.ACTIVE_POWER_TOTAL?.value ?? '—'} kW</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">cos φ Total:</span>
+                    <span className="consumption-value">{pxrSnapshot.POWER_FACTOR_TOTAL?.value ?? '—'}</span>
+                  </div>
                 </div>
               )}
             </div>

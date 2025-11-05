@@ -11,6 +11,7 @@ Eaton ECAM (Modbus TCP) → Backend Poller → PostgreSQL → REST API → Front
 ## Features
 
 - ✅ Modbus TCP client for Eaton PXR25
+- ✅ PXR10-compatible communication client and API
 - ✅ Automatic polling every 5 seconds
 - ✅ PostgreSQL persistence
 - ✅ RESTful API
@@ -39,6 +40,7 @@ POLL_INTERVAL_SECONDS=5
 DB_NAME=energy_management
 DB_USER=postgres
 DB_PASSWORD=postgres
+MODBUS_FLOAT_MODE=BE       # Float decode: BE | LE | SWAP
 ```
 
 ### Mock Mode (Testing Without Hardware)
@@ -311,9 +313,11 @@ backend/
 │   ├── database.js        # PostgreSQL client
 │   ├── modbusPoller.js    # Modbus TCP poller
 │   ├── modbusConfig.js    # Register definitions
+│   ├── pxr10Client.js     # PXR10 communication client (read-only)
 │   └── routes/
 │       ├── locations.js   # Location endpoints
-│       └── system.js      # System endpoints
+│       ├── system.js      # System endpoints
+│       └── pxr10.js       # PXR10 endpoints
 ├── schema.sql             # Database schema
 ├── package.json
 └── .env                   # Configuration
@@ -331,3 +335,13 @@ backend/
 ## License
 
 MIT
+### PXR10
+
+#### GET /api/v1/pxr10/status
+Returns communication status for the PXR10 client
+
+#### GET /api/v1/pxr10/registers
+Reads all configured registers (one-shot, no DB write)
+
+#### GET /api/v1/pxr10/read/:key
+Reads a single configured register by key from `src/modbusConfig.js`

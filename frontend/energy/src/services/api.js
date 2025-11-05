@@ -47,4 +47,11 @@ export const systemAPI = {
   triggerPoll: () => api.post('/system/poll'),
 };
 
+// PXR10 API
+export const pxr10API = {
+  getStatus: () => api.get('/pxr10/status'),
+  getAllRegisters: () => api.get('/pxr10/registers'),
+  readRegister: (key) => api.get(`/pxr10/read/${encodeURIComponent(key)}`),
+};
+
 export default api;

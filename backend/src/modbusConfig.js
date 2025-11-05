@@ -1,9 +1,10 @@
 /**
- * Modbus Register Map for Eaton PXR25
- * Based on PXR10 manual - Table 24
- * 
- * Register addresses are in Modbus format (subtract 400001 for actual register)
- * All power/energy values are 32-bit floats (2 registers)
+ * Modbus Register Map (PXR10/ECAM class device)
+ * Source: pxr10 documentation (Docs/pxr10 (1).pdf)
+ *
+ * Notes:
+ * - Addresses are Holding Registers (4x). Actual register = address - 400001
+ * - Values are 32-bit floats (2 registers), unless noted otherwise
  */
 
 export const MODBUS_REGISTERS = {
