@@ -38,12 +38,12 @@ function DashboardLayout({ children, location = 'SALA SPORT', onLocationChange, 
                   </Button>
                 )}
                 <div className="logo-placeholder">
-                  <h4>⚡ TU</h4>
+                  <h4>⚡</h4>
                 </div>
                 <div className="university-name d-none d-md-block">
                   <strong>TECHNICAL UNIVERSITY</strong>
                   <br />
-                  <small>of ROMANIA</small>
+                  <small>of CLUJ-NAPOCA</small>
                 </div>
               </div>
             </Col>

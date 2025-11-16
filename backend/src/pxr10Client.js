@@ -8,7 +8,7 @@ dotenv.config();
 const MODBUS_HOST = process.env.MODBUS_HOST || '192.168.1.100';
 const MODBUS_PORT = parseInt(process.env.MODBUS_PORT) || 502;
 const MODBUS_UNIT_ID = parseInt(process.env.MODBUS_UNIT_ID) || 1;
-const MOCK_MODE = process.env.MOCK_MODE === 'true';
+const MOCK_MODE = process.env.MOCK_MODE === 'false';
 const FLOAT_MODE = (process.env.MODBUS_FLOAT_MODE || 'BE').toUpperCase();
 
 function parseFloat32(buffer) {
