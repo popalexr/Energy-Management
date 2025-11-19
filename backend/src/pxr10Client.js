@@ -1,14 +1,17 @@
-import net from 'net';
 import Modbus from 'jsmodbus';
+import { SerialPort } from 'serialport';
 import dotenv from 'dotenv';
 import { MODBUS_REGISTERS, getRegisterNumber } from './modbusConfig.js';
 
 dotenv.config();
 
-const MODBUS_HOST = process.env.MODBUS_HOST || '192.168.1.100';
-const MODBUS_PORT = parseInt(process.env.MODBUS_PORT) || 502;
 const MODBUS_UNIT_ID = parseInt(process.env.MODBUS_UNIT_ID) || 1;
-const MOCK_MODE = process.env.MOCK_MODE === 'false';
+const MODBUS_SERIAL_PORT = process.env.MODBUS_SERIAL_PORT || '/dev/ttyUSB0';
+const MODBUS_SERIAL_BAUD_RATE = parseInt(process.env.MODBUS_SERIAL_BAUD_RATE) || 9600;
+const MODBUS_SERIAL_DATA_BITS = parseInt(process.env.MODBUS_SERIAL_DATA_BITS) || 8;
+const MODBUS_SERIAL_STOP_BITS = parseInt(process.env.MODBUS_SERIAL_STOP_BITS) || 1;
+const MODBUS_SERIAL_PARITY = process.env.MODBUS_SERIAL_PARITY || 'none';
+const MOCK_MODE = process.env.MOCK_MODE === 'true';
 const FLOAT_MODE = (process.env.MODBUS_FLOAT_MODE || 'BE').toUpperCase();
 
 function parseFloat32(buffer) {
@@ -33,7 +36,7 @@ function parseFloat32(buffer) {
 
 class Pxr10Client {
   constructor() {
-    this.socket = null;
+    this.port = null;
     this.client = null;
     this.connected = false;
   }
@@ -50,34 +53,50 @@ class Pxr10Client {
 
     if (this.connected) return;
 
-    this.socket = new net.Socket();
-    this.client = new Modbus.client.TCP(this.socket, MODBUS_UNIT_ID);
+    this.port = new SerialPort({
+      path: MODBUS_SERIAL_PORT,
+      baudRate: MODBUS_SERIAL_BAUD_RATE,
+      dataBits: MODBUS_SERIAL_DATA_BITS,
+      stopBits: MODBUS_SERIAL_STOP_BITS,
+      parity: MODBUS_SERIAL_PARITY,
+      autoOpen: false,
+    });
+
+    this.client = new Modbus.client.RTU(this.port, MODBUS_UNIT_ID);
 
     await new Promise((resolve, reject) => {
-      this.socket.once('connect', () => {
+      const handleOpen = () => {
         this.connected = true;
         resolve();
-      });
-      this.socket.once('error', (err) => {
+      };
+      const handleError = (err) => {
         this.connected = false;
         reject(err);
-      });
+      };
+
+      this.port.once('open', handleOpen);
+      this.port.once('error', handleError);
+
       try {
-        this.socket.connect({ host: MODBUS_HOST, port: MODBUS_PORT });
+        this.port.open((err) => {
+          if (err) {
+            handleError(err);
+          }
+        });
       } catch (err) {
-        reject(err);
+        handleError(err);
       }
     });
   }
 
   async disconnect() {
     try {
-      if (this.socket) {
-        this.socket.end();
+      if (this.port && this.port.isOpen) {
+        this.port.close();
       }
     } finally {
       this.connected = false;
-      this.socket = null;
+      this.port = null;
       this.client = null;
     }
   }
@@ -147,4 +166,3 @@ class Pxr10Client {
 
 export const pxr10Client = new Pxr10Client();
 export default pxr10Client;
-

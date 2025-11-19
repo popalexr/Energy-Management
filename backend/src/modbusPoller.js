@@ -1,5 +1,5 @@
 import Modbus from 'jsmodbus';
-import net from 'net';
+import { SerialPort } from 'serialport';
 import schedule from 'node-schedule';
 import dotenv from 'dotenv';
 import { insertMeasurement } from './database.js';
@@ -9,14 +9,18 @@ import { generateMockMeasurements } from './mockModbus.js';
 dotenv.config();
 
 // Modbus client configuration
-const MODBUS_HOST = process.env.MODBUS_HOST || '192.168.1.100';
-const MODBUS_PORT = parseInt(process.env.MODBUS_PORT) || 502;
 const MODBUS_UNIT_ID = parseInt(process.env.MODBUS_UNIT_ID) || 1;
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL_SECONDS) || 5;
 const LOCATION = process.env.LOCATION_SALA_SPORT || 'sala-sport';
 const MOCK_MODE = process.env.MOCK_MODE === 'true';
 
-let socket = null;
+const MODBUS_SERIAL_PORT = process.env.MODBUS_SERIAL_PORT || '/dev/ttyUSB0';
+const MODBUS_SERIAL_BAUD_RATE = parseInt(process.env.MODBUS_SERIAL_BAUD_RATE) || 9600;
+const MODBUS_SERIAL_DATA_BITS = parseInt(process.env.MODBUS_SERIAL_DATA_BITS) || 8;
+const MODBUS_SERIAL_STOP_BITS = parseInt(process.env.MODBUS_SERIAL_STOP_BITS) || 1;
+const MODBUS_SERIAL_PARITY = process.env.MODBUS_SERIAL_PARITY || 'none';
+
+let port = null;
 let client = null;
 let isConnected = false;
 let pollJob = null;
@@ -32,28 +36,36 @@ export function initModbusConnection() {
     return;
   }
   
-  console.log(`📡 Connecting to Modbus TCP at ${MODBUS_HOST}:${MODBUS_PORT}...`);
+  console.log(`📡 Connecting to Modbus RTU on ${MODBUS_SERIAL_PORT}...`);
   
-  socket = new net.Socket();
-  client = new Modbus.client.TCP(socket, MODBUS_UNIT_ID);
+  port = new SerialPort({
+    path: MODBUS_SERIAL_PORT,
+    baudRate: MODBUS_SERIAL_BAUD_RATE,
+    dataBits: MODBUS_SERIAL_DATA_BITS,
+    stopBits: MODBUS_SERIAL_STOP_BITS,
+    parity: MODBUS_SERIAL_PARITY,
+    autoOpen: false,
+  });
+
+  client = new Modbus.client.RTU(port, MODBUS_UNIT_ID);
   
-  socket.on('connect', () => {
-    console.log('✅ Modbus TCP connected successfully');
+  port.on('open', () => {
+    console.log('✅ Modbus RTU connected successfully');
     isConnected = true;
   });
   
-  socket.on('error', (err) => {
-    console.error('❌ Modbus connection error:', err.message);
+  port.on('error', (err) => {
+    console.error('❌ Modbus serial error:', err.message);
     isConnected = false;
   });
   
-  socket.on('close', () => {
-    console.log('⚠️  Modbus connection closed');
+  port.on('close', () => {
+    console.log('⚠️  Modbus serial connection closed');
     isConnected = false;
     
     // Attempt reconnection after 10 seconds
     setTimeout(() => {
-      console.log('🔄 Attempting to reconnect...');
+      console.log('🔄 Attempting to reopen serial port...');
       connectToModbus();
     }, 10000);
   });
@@ -66,9 +78,15 @@ export function initModbusConnection() {
  */
 function connectToModbus() {
   try {
-    socket.connect({ host: MODBUS_HOST, port: MODBUS_PORT });
+    if (port && !port.isOpen) {
+      port.open((err) => {
+        if (err) {
+          console.error('❌ Failed to open Modbus serial port:', err.message);
+        }
+      });
+    }
   } catch (error) {
-    console.error('❌ Failed to connect to Modbus:', error.message);
+    console.error('❌ Failed to open Modbus serial port:', error.message);
   }
 }
 
@@ -194,8 +212,8 @@ export function stopPolling() {
     console.log('⏹️  Polling stopped');
   }
   
-  if (socket) {
-    socket.end();
+  if (port && port.isOpen) {
+    port.close();
   }
 }
 
@@ -206,8 +224,8 @@ export function getConnectionStatus() {
   return {
     connected: isConnected,
     mockMode: MOCK_MODE,
-    host: MODBUS_HOST,
-    port: MODBUS_PORT,
+    serialPort: MODBUS_SERIAL_PORT,
+    baudRate: MODBUS_SERIAL_BAUD_RATE,
     unitId: MODBUS_UNIT_ID,
     pollInterval: POLL_INTERVAL,
   };
