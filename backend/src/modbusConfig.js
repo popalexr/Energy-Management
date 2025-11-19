@@ -1,12 +1,3 @@
-/**
- * Modbus Register Map (PXR10/ECAM class device)
- * Source: pxr10 documentation (Docs/pxr10 (1).pdf)
- *
- * Notes:
- * - Addresses are Holding Registers (4x). Actual register = address - 400001
- * - Values are 32-bit floats (2 registers), unless noted otherwise
- */
-
 export const MODBUS_REGISTERS = {
   // Voltage Measurements (Phase-to-Neutral)
   VOLTAGE_L1N: { address: 404609, length: 2, type: 'float', unit: 'V', metric: 'voltage', phase: 'L1-N' },
@@ -64,8 +55,7 @@ export const MODBUS_REGISTERS = {
 };
 
 /**
- * Convert Modbus address to register number
- * Modbus address format: 4XXXXX (holding registers)
+ * Convert Modbus address (4XXXXX) to zero-based register number
  * Actual register = address - 400001
  */
 export function getRegisterNumber(address) {
@@ -73,10 +63,36 @@ export function getRegisterNumber(address) {
 }
 
 /**
- * Parse 32-bit float from two Modbus registers (Big Endian)
+ * Parse 32-bit float from two Modbus registers.
+ *
+ * Float decoding mode is controlled by MODBUS_FLOAT_MODE:
+ * - BE   → Big Endian (AB CD)
+ * - LE   → Little Endian (DC BA)
+ * - SWAP → Word swap (CD AB, each word Big Endian)
  */
 export function parseFloat32BE(buffer, offset = 0) {
-  return buffer.readFloatBE(offset);
+  const mode = (process.env.MODBUS_FLOAT_MODE || 'BE').toUpperCase();
+
+  try {
+    switch (mode) {
+      case 'LE':
+        return buffer.readFloatLE(offset);
+      case 'SWAP': {
+        // Swap 16-bit words: AB CD -> CD AB, then decode as BE
+        const swapped = Buffer.from([
+          buffer[offset + 2],
+          buffer[offset + 3],
+          buffer[offset + 0],
+          buffer[offset + 1],
+        ]);
+        return swapped.readFloatBE(0);
+      }
+      default: // 'BE'
+        return buffer.readFloatBE(offset);
+    }
+  } catch {
+    return NaN;
+  }
 }
 
 /**
