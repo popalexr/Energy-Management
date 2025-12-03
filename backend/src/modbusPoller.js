@@ -3,7 +3,7 @@ import { SerialPort } from 'serialport';
 import schedule from 'node-schedule';
 import dotenv from 'dotenv';
 import { insertMeasurement } from './database.js';
-import { MODBUS_REGISTERS, getRegisterNumber, parseFloat32BE } from './modbusConfig.js';
+import { MODBUS_REGISTERS, decodeRegisterValue, getRegisterNumber } from './modbusConfig.js';
 import { generateMockMeasurements } from './mockModbus.js';
 
 dotenv.config();
@@ -98,15 +98,27 @@ async function readRegister(registerConfig) {
     throw new Error('Modbus not connected');
   }
   
-  const registerNumber = getRegisterNumber(registerConfig.address);
+  const registerNumber = getRegisterNumber(
+    registerConfig.address,
+    registerConfig.zeroBased ?? true
+  );
   
   try {
     const response = await client.readHoldingRegisters(registerNumber, registerConfig.length);
-    const value = parseFloat32BE(response.response.body.valuesAsBuffer);
+    const rawValue = decodeRegisterValue(
+      response.response.body.valuesAsBuffer,
+      registerConfig
+    );
+
+    if (!Number.isFinite(rawValue)) {
+      console.warn(`Invalid value for register ${registerConfig.address}`);
+      return null;
+    }
+    const value = parseFloat(rawValue.toFixed(3));
     
     return {
       metric: registerConfig.metric,
-      value: parseFloat(value.toFixed(3)),
+      value,
       unit: registerConfig.unit,
       phase: registerConfig.phase,
     };

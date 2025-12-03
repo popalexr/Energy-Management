@@ -1,7 +1,7 @@
 import Modbus from 'jsmodbus';
 import { SerialPort } from 'serialport';
 import dotenv from 'dotenv';
-import { MODBUS_REGISTERS, getRegisterNumber } from './modbusConfig.js';
+import { MODBUS_REGISTERS, decodeRegisterValue, getRegisterNumber } from './modbusConfig.js';
 
 dotenv.config();
 
@@ -12,27 +12,6 @@ const MODBUS_SERIAL_DATA_BITS = parseInt(process.env.MODBUS_SERIAL_DATA_BITS) ||
 const MODBUS_SERIAL_STOP_BITS = parseInt(process.env.MODBUS_SERIAL_STOP_BITS) || 1;
 const MODBUS_SERIAL_PARITY = process.env.MODBUS_SERIAL_PARITY || 'none';
 const MOCK_MODE = process.env.MOCK_MODE === 'true';
-const FLOAT_MODE = (process.env.MODBUS_FLOAT_MODE || 'BE').toUpperCase();
-
-function parseFloat32(buffer) {
-  try {
-    switch (FLOAT_MODE) {
-      case 'LE':
-        return buffer.readFloatLE(0);
-      case 'SWAP': {
-        // Swap 16-bit words (AB CD -> CD AB) then decode BE
-        const swapped = Buffer.from([
-          buffer[2], buffer[3], buffer[0], buffer[1],
-        ]);
-        return swapped.readFloatBE(0);
-      }
-      default: // 'BE'
-        return buffer.readFloatBE(0);
-    }
-  } catch (e) {
-    return NaN;
-  }
-}
 
 class Pxr10Client {
   constructor() {
@@ -125,22 +104,17 @@ class Pxr10Client {
       await this.connect();
     }
 
-    const reg = getRegisterNumber(cfg.address);
+    const reg = getRegisterNumber(cfg.address, cfg.zeroBased ?? true);
     const length = cfg.length || 2;
     const resp = await this.client.readHoldingRegisters(reg, length);
     const buf = resp.response.body.valuesAsBuffer;
 
-    let value;
-    if (cfg.type === 'float') {
-      value = parseFloat32(buf);
-    } else {
-      // default: 16-bit integer or raw buffer
-      value = buf.readInt16BE(0);
-    }
+    const rawValue = decodeRegisterValue(buf, cfg);
+    const value = Number.isFinite(rawValue) ? parseFloat(rawValue.toFixed(3)) : null;
 
     return {
       metric: cfg.metric,
-      value: Number.isFinite(value) ? parseFloat(value.toFixed(3)) : null,
+      value,
       unit: cfg.unit,
       phase: cfg.phase,
       address: cfg.address,

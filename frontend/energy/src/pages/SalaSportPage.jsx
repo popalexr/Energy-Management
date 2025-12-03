@@ -1,6 +1,6 @@
 import { Row, Col, Button, Modal } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import KpiCard from '../components/KpiCard';
 import ChartPanel from '../components/ChartPanel';
 import MeasurementTable from '../components/MeasurementTable';
@@ -9,7 +9,6 @@ import './SalaSportPage.css';
 
 function SalaSportPage() {
   const { locationId } = useParams();
-  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -98,7 +97,12 @@ function SalaSportPage() {
     );
   }
 
-  const { voltage, current, activePower, reactivePower, apparentPower, powerFactor, energy, frequency } = dashboardData || {};
+  const {
+    voltage = {},
+    current = {},
+    activePower = {},
+    energy = {},
+  } = dashboardData || {};
 
   return (
     <div className="sala-sport-page">
@@ -144,36 +148,47 @@ function SalaSportPage() {
             </Col>
           </Row>
 
-          <Row className="mt-2">
+          {/* Current Section */}
+          <div className="section-header mt-4">
+            <h4>Curent Faze (Current)</h4>
+            <Button 
+              variant="outline-secondary" 
+              size="sm"
+              onClick={() => handleCardClick('current', 'Current History')}
+            >
+              Open
+            </Button>
+          </div>
+          <Row>
             <Col md={4}>
               <KpiCard 
-                title="L1-L2" 
-                value={voltage?.['L1-L2']?.value} 
-                unit="V" 
+                title="L1" 
+                value={current?.L1?.value} 
+                unit="A" 
                 variant="info"
               />
             </Col>
             <Col md={4}>
               <KpiCard 
-                title="L2-L3" 
-                value={voltage?.['L2-L3']?.value} 
-                unit="V" 
+                title="L2" 
+                value={current?.L2?.value} 
+                unit="A" 
                 variant="info"
               />
             </Col>
             <Col md={4}>
               <KpiCard 
-                title="L3-L1" 
-                value={voltage?.['L3-L1']?.value} 
-                unit="V" 
+                title="L3" 
+                value={current?.L3?.value} 
+                unit="A" 
                 variant="info"
               />
             </Col>
           </Row>
 
-          {/* Power Section */}
+          {/* Active Power (Total only) */}
           <div className="section-header mt-4">
-            <h4>Putere Activa (Active Power)</h4>
+            <h4>Putere Activa Total</h4>
             <Button 
               variant="outline-success" 
               size="sm"
@@ -183,31 +198,7 @@ function SalaSportPage() {
             </Button>
           </div>
           <Row>
-            <Col md={3}>
-              <KpiCard 
-                title="L1" 
-                value={activePower?.L1?.value} 
-                unit="kW" 
-                variant="success"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L2" 
-                value={activePower?.L2?.value} 
-                unit="kW" 
-                variant="success"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L3" 
-                value={activePower?.L3?.value} 
-                unit="kW" 
-                variant="success"
-              />
-            </Col>
-            <Col md={3}>
+            <Col md={4}>
               <KpiCard 
                 title="Total" 
                 value={activePower?.total?.value} 
@@ -217,101 +208,9 @@ function SalaSportPage() {
             </Col>
           </Row>
 
-          {/* Reactive Power */}
-          <div className="section-header mt-4">
-            <h4>Putere Reactiva (Reactive Power)</h4>
-            <Button 
-              variant="outline-warning" 
-              size="sm"
-              onClick={() => handleCardClick('reactive_power', 'Reactive Power History')}
-            >
-              Open
-            </Button>
-          </div>
-          <Row>
-            <Col md={3}>
-              <KpiCard 
-                title="L1" 
-                value={reactivePower?.L1?.value} 
-                unit="kVAR" 
-                variant="warning"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L2" 
-                value={reactivePower?.L2?.value} 
-                unit="kVAR" 
-                variant="warning"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L3" 
-                value={reactivePower?.L3?.value} 
-                unit="kVAR" 
-                variant="warning"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="Total" 
-                value={reactivePower?.total?.value} 
-                unit="kVAR" 
-                variant="warning"
-              />
-            </Col>
-          </Row>
-
-          {/* Apparent Power */}
-          <div className="section-header mt-4">
-            <h4>Putere Aparenta (Apparent Power)</h4>
-            <Button 
-              variant="outline-info" 
-              size="sm"
-              onClick={() => handleCardClick('apparent_power', 'Apparent Power History')}
-            >
-              Open
-            </Button>
-          </div>
-          <Row>
-            <Col md={3}>
-              <KpiCard 
-                title="L1" 
-                value={apparentPower?.L1?.value} 
-                unit="kVA" 
-                variant="info"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L2" 
-                value={apparentPower?.L2?.value} 
-                unit="kVA" 
-                variant="info"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L3" 
-                value={apparentPower?.L3?.value} 
-                unit="kVA" 
-                variant="info"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="Total" 
-                value={apparentPower?.total?.value} 
-                unit="kVA" 
-                variant="info"
-              />
-            </Col>
-          </Row>
-
           {/* Energy Section */}
           <div className="section-header mt-4">
-            <h4>Energie Activa (Active Energy)</h4>
+            <h4>Energie Activa (Import)</h4>
             <Button 
               variant="outline-success" 
               size="sm"
@@ -329,56 +228,6 @@ function SalaSportPage() {
                 variant="success"
               />
             </Col>
-            <Col md={6}>
-              <KpiCard 
-                title="Export" 
-                value={energy?.energy_active_export?.value} 
-                unit="kWh" 
-                variant="success"
-              />
-            </Col>
-          </Row>
-
-          {/* Power Factor */}
-          <div className="section-header mt-4">
-            <h4>cos φ (Power Factor)</h4>
-            <Button 
-              variant="outline-primary" 
-              size="sm"
-              onClick={() => handleCardClick('power_factor', 'Power Factor History')}
-            >
-              Open
-            </Button>
-          </div>
-          <Row>
-            <Col md={3}>
-              <KpiCard 
-                title="L1" 
-                value={powerFactor?.L1?.value} 
-                variant="primary"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L2" 
-                value={powerFactor?.L2?.value} 
-                variant="primary"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="L3" 
-                value={powerFactor?.L3?.value} 
-                variant="primary"
-              />
-            </Col>
-            <Col md={3}>
-              <KpiCard 
-                title="Total" 
-                value={powerFactor?.total?.value} 
-                variant="primary"
-              />
-            </Col>
           </Row>
         </Col>
 
@@ -388,6 +237,7 @@ function SalaSportPage() {
             <h4 className="panel-title">VALORI MARIMI ELECTRICE MASURATE</h4>
             
             <MeasurementTable
+              title="Voltage (V)"
               headers={['Phase', 'L1-N', 'L2-N', 'L3-N', 'Unit']}
               data={[
                 {
@@ -401,14 +251,15 @@ function SalaSportPage() {
             />
 
             <MeasurementTable
-              headers={['Phase', 'L1-L2', 'L2-L3', 'L3-N', 'Unit']}
+              title="Current (A)"
+              headers={['Phase', 'L1', 'L2', 'L3', 'Unit']}
               data={[
                 {
-                  phase: 'Voltage',
-                  l1l2: voltage?.['L1-L2']?.value || 0,
-                  l2l3: voltage?.['L2-L3']?.value || 0,
-                  l3n: voltage?.['L3-L1']?.value || 0,
-                  unit: 'V'
+                  phase: 'Current',
+                  l1: current?.L1?.value || 0,
+                  l2: current?.L2?.value || 0,
+                  l3: current?.L3?.value || 0,
+                  unit: 'A'
                 }
               ]}
             />
@@ -421,14 +272,12 @@ function SalaSportPage() {
                   {energy?.energy_active_import?.value?.toFixed(2) || 0} kWh
                 </span>
               </div>
-              {frequency && (
-                <div className="consumption-item">
-                  <span className="consumption-label">Frequency:</span>
-                  <span className="consumption-value">
-                    {frequency.value?.toFixed(2)} Hz
-                  </span>
-                </div>
-              )}
+              <div className="consumption-item">
+                <span className="consumption-label">Active Power Total:</span>
+                <span className="consumption-value">
+                  {activePower?.total?.value?.toFixed?.(3) ?? '—'} kW
+                </span>
+              </div>
             </div>
 
             {/* Live PXR10 Snapshot */}
@@ -457,16 +306,32 @@ function SalaSportPage() {
                     <span className="consumption-value">{pxrSnapshot.VOLTAGE_L1N?.value ?? '—'} V</span>
                   </div>
                   <div className="consumption-item">
+                    <span className="consumption-label">U L2-N:</span>
+                    <span className="consumption-value">{pxrSnapshot.VOLTAGE_L2N?.value ?? '—'} V</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">U L3-N:</span>
+                    <span className="consumption-value">{pxrSnapshot.VOLTAGE_L3N?.value ?? '—'} V</span>
+                  </div>
+                  <div className="consumption-item">
                     <span className="consumption-label">I L1:</span>
                     <span className="consumption-value">{pxrSnapshot.CURRENT_L1?.value ?? '—'} A</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">I L2:</span>
+                    <span className="consumption-value">{pxrSnapshot.CURRENT_L2?.value ?? '—'} A</span>
+                  </div>
+                  <div className="consumption-item">
+                    <span className="consumption-label">I L3:</span>
+                    <span className="consumption-value">{pxrSnapshot.CURRENT_L3?.value ?? '—'} A</span>
                   </div>
                   <div className="consumption-item">
                     <span className="consumption-label">P Total:</span>
                     <span className="consumption-value">{pxrSnapshot.ACTIVE_POWER_TOTAL?.value ?? '—'} kW</span>
                   </div>
                   <div className="consumption-item">
-                    <span className="consumption-label">cos φ Total:</span>
-                    <span className="consumption-value">{pxrSnapshot.POWER_FACTOR_TOTAL?.value ?? '—'}</span>
+                    <span className="consumption-label">Energy Import:</span>
+                    <span className="consumption-value">{pxrSnapshot.ENERGY_ACTIVE_IMPORT?.value ?? '—'} kWh</span>
                   </div>
                 </div>
               )}
