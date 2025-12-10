@@ -15,10 +15,10 @@ const LOCATION = process.env.LOCATION_SALA_SPORT || 'sala-sport';
 const MOCK_MODE = process.env.MOCK_MODE === 'true';
 
 const MODBUS_SERIAL_PORT = process.env.MODBUS_SERIAL_PORT || '/dev/ttyUSB0';
-const MODBUS_SERIAL_BAUD_RATE = parseInt(process.env.MODBUS_SERIAL_BAUD_RATE) || 9600;
+const MODBUS_SERIAL_BAUD_RATE = parseInt(process.env.MODBUS_SERIAL_BAUD_RATE) || 19200;
 const MODBUS_SERIAL_DATA_BITS = parseInt(process.env.MODBUS_SERIAL_DATA_BITS) || 8;
 const MODBUS_SERIAL_STOP_BITS = parseInt(process.env.MODBUS_SERIAL_STOP_BITS) || 1;
-const MODBUS_SERIAL_PARITY = process.env.MODBUS_SERIAL_PARITY || 'none';
+const MODBUS_SERIAL_PARITY = process.env.MODBUS_SERIAL_PARITY || 'even';
 
 let port = null;
 let client = null;
@@ -123,7 +123,7 @@ async function readRegister(registerConfig) {
       phase: registerConfig.phase,
     };
   } catch (error) {
-    console.error(`Error reading register ${registerConfig.address}:`, error.message);
+    console.error(`Error reading register ${registerConfig.address}:`, error.message, error);
     return null;
   }
 }
@@ -185,7 +185,7 @@ async function pollAllRegisters() {
       }
       
       // Small delay between reads to avoid overwhelming the device
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error) {
       console.error(`Error polling ${key}:`, error.message);
     }

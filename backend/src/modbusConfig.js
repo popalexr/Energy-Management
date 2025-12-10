@@ -11,7 +11,7 @@ export const MODBUS_REGISTERS = {
   ACTIVE_POWER_TOTAL: { address: 0x182A, length: 2, type: 'int32', scale: 1.0, unit: 'kW', metric: 'active_power', phase: 'total' },
 
   // Energy import (kWh); register uses four 16-bit words (64-bit unsigned) scaled by 1000
-  ENERGY_ACTIVE_IMPORT: { address: 0x1848, length: 4, type: 'uint64', scale: 1000.0, unit: 'kWh', metric: 'energy_active', phase: 'import' },
+  ENERGY_ACTIVE_IMPORT: { address: 0x1848, length: 6, type: 'uint64', scale: 1000.0, unit: 'kWh', metric: 'energy_active', phase: 'import' },
 };
 
 /**

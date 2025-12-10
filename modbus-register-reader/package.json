@@ -1,0 +1,15 @@
+{
+  "name": "modbus-register-reader",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI script to read Modbus registers defined in ../backend/src/modbusConfig.js and log values to console.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/read-registers.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "jsmodbus": "^4.0.6",
+    "serialport": "^12.0.0"
+  }
+}
